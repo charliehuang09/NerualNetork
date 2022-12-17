@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <random>
 using namespace std;
 
 struct Derivatives{
@@ -17,6 +18,8 @@ class NN {
     vector<vector<vector<float>>> weights;//layer, float, connections
     vector<vector<float>> bias;
     vector<vector<float>> activation;
+    default_random_engine generator;
+    normal_distribution<float> distribution;
     float relu(float x){
         return max(0.0f,x);
     };
@@ -85,22 +88,25 @@ class NN {
 //        for (int i = 0; i < input.size(); i++) input[i] *= activation[]
 //    }
     public:
-    void initialize(float inputs, float outputs, float w, float b){//3 2
+    void initialize(float inputs, float outputs, float mean, float std, float seed=0){
+        srand(time(0));
+        distribution = normal_distribution<float> (mean,std);
         vector<vector<float>> newLayer;
         vector<float> curr;
         vector<float> t;
-        for (int i = 0; i < outputs; i++) t.push_back(b);
-        for (int i = 0; i < inputs; i++) curr.push_back(w);
+        for (int i = 0; i < outputs; i++) t.push_back(0);
+        for (int i = 0; i < inputs; i++) curr.push_back(distribution(generator));
         for (int i = 0; i < outputs; i++) newLayer.push_back(curr);
         weights.push_back(newLayer);
         bias.push_back(t);
     };
-    void create_layer(float size, float w, float b){
+    void create_layer(float size, float seed=0){
+        srand(time(0));
         vector<vector<float>> newLayer;
         vector<float> connections;
         vector<float> t;
-        for (int i = 0; i < size; i++) t.push_back(b);
-        for (int i = 0; i < weights[weights.size() - 1].size(); i++) connections.push_back(w);
+        for (int i = 0; i < size; i++) t.push_back(0);
+        for (int i = 0; i < weights[weights.size() - 1].size(); i++) connections.push_back(distribution(generator));
         for (int i = 0; i < size; i++) newLayer.push_back(connections);
         weights.push_back(newLayer);
         bias.push_back(t);
@@ -183,9 +189,9 @@ int main(){
         Y.push_back(3*i + 10);
     }
     NN model;
-    model.initialize(1, 2, 1, 0);
-    model.create_layer(3, 1, 0);
-    model.create_layer(1, 1, 0);
+    model.initialize(1, 2, 1, 1);
+    model.create_layer(3 );
+    model.create_layer(1);
     cout << model.predict(1.0) << " ";
     model.backProp(1, 1);
     model.fit(X, Y, 0.001, 1000);
