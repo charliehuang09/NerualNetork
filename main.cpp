@@ -27,6 +27,12 @@ class NN {
         if (x > 0) return 1;
         return 0;
     }
+    float sigmoid(float x){
+        return 1 / (1 + exp(-x));
+    }
+    float sigmoidDerivative(float x){
+        return sigmoid(x)*(1-sigmoid(x));
+    }
     vector<float> activationDerivative(vector<float> input, vector<float> activation){
         for (int i = 0; i < input.size(); i++) input[i] = input[i] * reluDerivative(activation[i]);
         return input;
@@ -189,8 +195,8 @@ int main(){
         Y.push_back(3*i + 10);
     }
     NN model;
-    model.initialize(1, 2, 1, 1);
-    model.create_layer(3 );
+    model.initialize(1, 3, 1, 1);
+    model.create_layer(3);
     model.create_layer(1);
     cout << model.predict(1.0) << " ";
     model.backProp(1, 1);
