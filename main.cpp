@@ -143,7 +143,7 @@ class NN {
         vector<float> prevDerivative;
         vector<float> currDerivative;
         float predicted = predict(X);
-        prevDerivative.push_back(reluDerivative(activation[activation.size() - 1][0])*(predicted - Y));
+        prevDerivative.push_back(getDerivative(activation[activation.size() - 1][0], activationType[activation.size()-1])*(predicted - Y));
 //        biasDerivatives.push_back(prevDerivative);
         for (int i = weights.size() - 1; i >= 0; i--){
             layerDerivative.clear();
