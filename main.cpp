@@ -48,14 +48,9 @@ class NN {
         for (int i = 0; i < input.size(); i++) input[i] = input[i] * reluDerivative(activation[i]);
         return input;
     }
-    float dot(vector<float> inputs, vector<float> weights, bool isRelu){
+    float dot(vector<float> inputs, vector<float> weights, string function){
         float activation = 0;
-        if (isRelu){
-            for (float i = 0; i < weights.size(); i++) activation += relu(inputs[i]) * weights[i];
-        }
-        else{
-            for (float i = 0; i < weights.size(); i++) activation += inputs[i] * weights[i];
-        }
+        for (float i = 0; i < weights.size(); i++) activation += getFunction(inputs[i], function) * weights[i];
         return activation;
     }
     float cost(float a, float b){
@@ -101,9 +96,6 @@ class NN {
         }
         return output;
     }
-//    vector<float> multiplyActivation(vector<float> input, vector<float> activation){
-//        for (int i = 0; i < input.size(); i++) input[i] *= activation[]
-//    }
     public:
     void initialize(float inputs, float outputs, float mean, float std, string function){
         activationType.push_back(function);
@@ -136,8 +128,7 @@ class NN {
         for (int i = 0; i < weights.size(); i++){
             curr.clear();
             for (int j = 0; j < weights[i].size(); j++){
-                if (i != 0) curr.push_back(dot(prev, weights[i][j], true) + bias[i][j]);
-                curr.push_back(dot(prev, weights[i][j], false) + bias[i][j]);
+                curr.push_back(dot(prev, weights[i][j], activationType[i]) + bias[i][j]);
             }
             activation.push_back(curr);
             prev = curr;
