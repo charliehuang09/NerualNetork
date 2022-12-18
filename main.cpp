@@ -133,7 +133,7 @@ class NN {
             activation.push_back(curr);
             prev = curr;
         }
-        return relu(prev[0]);
+        return getFunction(prev[0], activationType[activationType.size() - 1]);
     }
     Derivatives backProp(float X, float Y){
         activation.clear();
@@ -144,7 +144,6 @@ class NN {
         vector<float> currDerivative;
         float predicted = predict(X);
         prevDerivative.push_back(getDerivative(activation[activation.size() - 1][0], activationType[activation.size()-1])*(predicted - Y));
-//        biasDerivatives.push_back(prevDerivative);
         for (int i = weights.size() - 1; i >= 0; i--){
             layerDerivative.clear();
             for (int j = 0; j < weights[i].size(); j++){
@@ -194,15 +193,15 @@ int main(){
     vector<float> Y;
     for (float i = 0; i < 10; i++){
         X.push_back(i);
-        Y.push_back(3*i + 10);
+        Y.push_back(i);
     }
     NN model;
     model.initialize(1, 3, 1, 1, "relu");
     model.create_layer(3, "relu");
-    model.create_layer(1, "relu");
-    cout << model.predict(1.0) << " ";
+    model.create_layer(1, "sigmoid");
+    cout << model.predict(1.0) << "\n";
     model.backProp(1, 1);
-    model.fit(X, Y, 0.001, 1000);
+    model.fit(X, Y, 0.001, 135);
     model.backProp(1.0, 1.0);
     for (int i = 0; i < 10; i++) cout << model.predict(X[i]) << " " << Y[i] << "\n";
     return 0;
