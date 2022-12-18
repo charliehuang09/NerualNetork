@@ -56,8 +56,8 @@ class NN {
     float cost(float a, float b){
         return (a-b)*(a-b);
     }
-    float getDerivative(float prevDerivative, float activation){
-        return prevDerivative * relu(activation);
+    float getDerivative(float prevDerivative, float activation, string function){
+        return prevDerivative * getFunction(activation, function);
     }
     vector<float> add(vector<vector<float>> input){
         vector<float> output;
@@ -150,7 +150,7 @@ class NN {
             for (int j = 0; j < weights[i].size(); j++){
                 currDerivative.clear();
                 for (int k = 0; k < weights[i][j].size(); k++){
-                    currDerivative.push_back(getDerivative(prevDerivative[j],  activation[i][j]));
+                    currDerivative.push_back(getDerivative(prevDerivative[j],  activation[i][j], activationType[i]));
                 }
                 layerDerivative.push_back(currDerivative);
             }
