@@ -44,8 +44,8 @@ class NN {
         if (function == "sigmoid") return sigmoid(x);
         if (function == "linear") return x;
     }
-    vector<float> activationDerivative(vector<float> input, vector<float> activation){
-        for (int i = 0; i < input.size(); i++) input[i] = input[i] * reluDerivative(activation[i]);
+    vector<float> activationDerivative(vector<float> input, vector<float> activation, string function){
+        for (int i = 0; i < input.size(); i++) input[i] = input[i] * getDerivative(activation[i], function);
         return input;
     }
     float dot(vector<float> inputs, vector<float> weights, string function){
@@ -157,7 +157,7 @@ class NN {
             biasDerivatives.push_back(prevDerivative);
             weightDerivatives.push_back(layerDerivative);
             prevDerivative = multiplyWeight(prevDerivative, weights[i]);
-            prevDerivative = activationDerivative(prevDerivative, activation[i]);
+            prevDerivative = activationDerivative(prevDerivative, activation[i], activationType[i]);
         }
 
         reverse(weightDerivatives.begin(), weightDerivatives.end());
