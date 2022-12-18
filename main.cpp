@@ -18,6 +18,7 @@ class NN {
     vector<vector<vector<float>>> weights;//layer, float, connections
     vector<vector<float>> bias;
     vector<vector<float>> activation;
+    vector<string> activationType;
     default_random_engine generator;
     normal_distribution<float> distribution;
     float relu(float x){
@@ -32,6 +33,16 @@ class NN {
     }
     float sigmoidDerivative(float x){
         return sigmoid(x)*(1-sigmoid(x));
+    }
+    float getDerivative(float x, string function){
+        if (function == "relu") return reluDerivative(x);
+        if (function == "sigmoid") return sigmoidDerivative(x);
+        if (function == "linear") return 1;
+    }
+    float getFunction(float x, string function){
+        if (function == "relu") return relu(x);
+        if (function == "sigmoid") return sigmoid(x);
+        if (function == "linear") return x;
     }
     vector<float> activationDerivative(vector<float> input, vector<float> activation){
         for (int i = 0; i < input.size(); i++) input[i] = input[i] * reluDerivative(activation[i]);
@@ -94,8 +105,8 @@ class NN {
 //        for (int i = 0; i < input.size(); i++) input[i] *= activation[]
 //    }
     public:
-    void initialize(float inputs, float outputs, float mean, float std, float seed=0){
-        srand(time(0));
+    void initialize(float inputs, float outputs, float mean, float std, string function){
+        activationType.push_back(function);
         distribution = normal_distribution<float> (mean,std);
         vector<vector<float>> newLayer;
         vector<float> curr;
@@ -106,8 +117,8 @@ class NN {
         weights.push_back(newLayer);
         bias.push_back(t);
     };
-    void create_layer(float size, float seed=0){
-        srand(time(0));
+    void create_layer(float size, string function){
+        activationType.push_back(function);
         vector<vector<float>> newLayer;
         vector<float> connections;
         vector<float> t;
@@ -195,9 +206,9 @@ int main(){
         Y.push_back(3*i + 10);
     }
     NN model;
-    model.initialize(1, 3, 1, 1);
-    model.create_layer(3);
-    model.create_layer(1);
+    model.initialize(1, 3, 1, 1, "relu");
+    model.create_layer(3, "relu");
+    model.create_layer(1, "relu");
     cout << model.predict(1.0) << " ";
     model.backProp(1, 1);
     model.fit(X, Y, 0.001, 1000);
