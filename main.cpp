@@ -38,19 +38,23 @@ class NN {
         if (function == "relu") return reluDerivative(x);
         if (function == "sigmoid") return sigmoidDerivative(x);
         if (function == "linear") return 1;
+        cout << "\nwrong function";
+        exit(1);
     }
     float getFunction(float x, string function){
         if (function == "relu") return relu(x);
         if (function == "sigmoid") return sigmoid(x);
         if (function == "linear") return x;
+        cout << "\nwrong function";
+        exit(1);
     }
     vector<float> activationDerivative(vector<float> input, vector<float> activation, string function){
         for (int i = 0; i < input.size(); i++) input[i] = input[i] * getDerivative(activation[i], function);
         return input;
     }
-    float dot(vector<float> inputs, vector<float> weights, string function){
+    float dot(vector<float> inputs, vector<float> weight, string function){
         float activation = 0;
-        for (float i = 0; i < weights.size(); i++) activation += getFunction(inputs[i], function) * weights[i];
+        for (float i = 0; i < weight.size(); i++) activation += getFunction(inputs[i], function) * weight[i];
         return activation;
     }
     float cost(float a, float b){
@@ -96,8 +100,28 @@ class NN {
         }
         return output;
     }
+    Derivatives divide(Derivatives input, float d){
+        for (int i = 0; i < input.weights.size(); i++){
+            for (int j = 0; j < input.weights[i].size(); j++){
+                for (int k = 0; k < input.weights[i][j].size(); k++){
+                    input.weights[i][j][k] /= d;
+                }
+            }
+        }
+        for (int i = 0; i < input.bias.size(); i++){
+            for (int j = 0; j < input.bias[i].size(); j++){
+                input.bias[i][j] /= d;
+            }
+        }
+    }
     public:
+    void getOutputs(vector<float> X, vector<float> Y){
+        for (int i = 0;  i < X.size(); i++){
+            cout << predict(X[i]) << ' ' << Y[i] << "\n";
+        }
+    }
     void initialize(float inputs, float outputs, float mean, float std, string function){
+        activationType.push_back("linear");
         activationType.push_back(function);
         distribution = normal_distribution<float> (mean,std);
         vector<vector<float>> newLayer;
@@ -125,6 +149,7 @@ class NN {
         vector<float> prev;//activation of prev layer
         vector<float> curr;
         prev.push_back(input);
+        activation.push_back(prev);
         for (int i = 0; i < weights.size(); i++){
             curr.clear();
             for (int j = 0; j < weights[i].size(); j++){
@@ -136,20 +161,19 @@ class NN {
         return getFunction(prev[0], activationType[activationType.size() - 1]);
     }
     Derivatives backProp(float X, float Y){
-        activation.clear();
         vector<vector<vector<float>>> weightDerivatives;
         vector<vector<float>> layerDerivative;
         vector<vector<float>> biasDerivatives;
         vector<float> prevDerivative;
         vector<float> currDerivative;
         float predicted = predict(X);
-        prevDerivative.push_back(getDerivative(activation[activation.size() - 1][0], activationType[activation.size()-1])*(predicted - Y));
+        prevDerivative.push_back(getDerivative(activation[activation.size() - 1][0], activationType[activation.size()-2])*(predicted - Y));
         for (int i = weights.size() - 1; i >= 0; i--){
             layerDerivative.clear();
             for (int j = 0; j < weights[i].size(); j++){
                 currDerivative.clear();
                 for (int k = 0; k < weights[i][j].size(); k++){
-                    currDerivative.push_back(getDerivative(prevDerivative[j],  activation[i][j], activationType[i]));
+                    currDerivative.push_back(getDerivative(prevDerivative[j],  activation[i][k], activationType[i]));
                 }
                 layerDerivative.push_back(currDerivative);
             }
@@ -165,21 +189,22 @@ class NN {
     };
     void fit(vector<float> X, vector<float> Y, float lr, int epochs){
         for (int epoch = 0; epoch < epochs; epoch++){
-            Derivatives derivatives = backProp(X[0], Y[0]);;
+            Derivatives derivatives = backProp(X[0], Y[0]);
             for (int i = 1; i < X.size(); i++){
                 Derivatives currDerivatives = backProp(X[i], Y[i]);
                 derivatives = combine(derivatives, currDerivatives);
             }
+
             for (int i = 0; i < weights.size(); i++){
                 for (int j = 0; j < weights[i].size(); j++){
                     for (int k = 0; k < weights[i][j].size(); k++){
-                        weights[i][j][k] -= lr*(derivatives.weights[i][j][k]/X.size());
+                        weights[i][j][k] -= lr*(derivatives.weights[i][j][k]);
                     }
                 }
             }
             for (int i = 0; i < bias.size(); i++){
                 for (int j = 0; j < bias[i].size(); j++){
-                    bias[i][j] -= lr*(derivatives.bias[i][j]/X.size());
+                    bias[i][j] -= lr*(derivatives.bias[i][j]);
                 }
             }
         }
@@ -193,17 +218,15 @@ int main(){
     vector<float> Y;
     for (float i = 0; i < 10; i++){
         X.push_back(i);
-        Y.push_back(i);
+//        Y.push_back(i*3 + 2);
+//        Y.push_back(-i);
+        Y.push_back(i*i);
     }
     NN model;
-    model.initialize(1, 3, 1, 1, "relu");
-    model.create_layer(3, "relu");
-    model.create_layer(1, "sigmoid");
-    cout << model.predict(1.0) << "\n";
-    model.backProp(1, 1);
-    model.fit(X, Y, 0.001, 135);
-    model.backProp(1.0, 1.0);
-    for (int i = 0; i < 10; i++) cout << model.predict(X[i]) << " " << Y[i] << "\n";
+    model.initialize(1, 3, 5, 1, "relu");
+    model.create_layer(1, "linear");
+    model.fit(X, Y, 0.0001, 100);
+    model.getOutputs(X, Y);
     return 0;
 }
 //b4 = (Observed - Predicted)
