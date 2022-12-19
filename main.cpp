@@ -113,6 +113,7 @@ class NN {
                 input.bias[i][j] /= d;
             }
         }
+        return input;
     }
     public:
     void getOutputs(vector<float> X, vector<float> Y){
@@ -189,22 +190,24 @@ class NN {
     };
     void fit(vector<float> X, vector<float> Y, float lr, int epochs){
         for (int epoch = 0; epoch < epochs; epoch++){
+
             Derivatives derivatives = backProp(X[0], Y[0]);
             for (int i = 1; i < X.size(); i++){
                 Derivatives currDerivatives = backProp(X[i], Y[i]);
                 derivatives = combine(derivatives, currDerivatives);
             }
 
+            derivatives = divide(derivatives, X.size() / lr);
             for (int i = 0; i < weights.size(); i++){
                 for (int j = 0; j < weights[i].size(); j++){
                     for (int k = 0; k < weights[i][j].size(); k++){
-                        weights[i][j][k] -= lr*(derivatives.weights[i][j][k]);
+                        weights[i][j][k] -= derivatives.weights[i][j][k];
                     }
                 }
             }
             for (int i = 0; i < bias.size(); i++){
                 for (int j = 0; j < bias[i].size(); j++){
-                    bias[i][j] -= lr*(derivatives.bias[i][j]);
+                    bias[i][j] -= derivatives.bias[i][j];
                 }
             }
         }
@@ -219,13 +222,15 @@ int main(){
     for (float i = 0; i < 10; i++){
         X.push_back(i);
 //        Y.push_back(i*3 + 2);
-//        Y.push_back(-i);
-        Y.push_back(i*i);
+        Y.push_back(-i);
+//        Y.push_back(i*i);
     }
     NN model;
-    model.initialize(1, 3, 5, 1, "relu");
+    model.initialize(1, 3, 0.5, 0.5, "relu");
+    model.create_layer(3, "relu");
+    model.create_layer(3, "linear");
     model.create_layer(1, "linear");
-    model.fit(X, Y, 0.0001, 100);
+    model.fit(X, Y, 0.001, 1000);
     model.getOutputs(X, Y);
     return 0;
 }
