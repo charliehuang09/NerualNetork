@@ -219,16 +219,16 @@ int main(){
     //predict test
     vector<float> X;
     vector<float> Y;
-    for (float i = 0; i < 10; i++){
+    for (float i = 0; i < 5; i++){
         X.push_back(i);
-//        Y.push_back(i*3 + 2);
-        Y.push_back(-i);
+        Y.push_back(i*3 + 2);
+//        Y.push_back(-i);
 //        Y.push_back(i*i);
     }
     NN model;
-    model.initialize(1, 3, 0.5, 0.5, "relu");
-    model.create_layer(3, "relu");
-    model.create_layer(3, "linear");
+    model.initialize(1, 4, 0.5, 0.5, "relu");
+    model.create_layer(4, "relu");
+    model.create_layer(4, "relu");
     model.create_layer(1, "linear");
     model.fit(X, Y, 0.001, 1000);
     model.getOutputs(X, Y);
